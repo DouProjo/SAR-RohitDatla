@@ -53,6 +53,10 @@ class GameLevelPirateHunt {
             }
         }
 
+        /* Hide the leaderboard/coin counter bar — this level uses its own checklist */
+        const leaderboardHeader = document.querySelector('.leaderboard-header');
+        if (leaderboardHeader) leaderboardHeader.style.display = 'none';
+
         /* ---------------- BACKGROUND ---------------- */
 
         const bgDataPath = path + "/images/gamebuilder/bg/Ship.jpg";
@@ -166,6 +170,10 @@ class GameLevelPirateHunt {
 
     // Removes the heist checklist UI element from the DOM when the level is destroyed
     destroy() {
+        // Restore leaderboard header for other levels
+        const leaderboardHeader = document.querySelector('.leaderboard-header');
+        if (leaderboardHeader) leaderboardHeader.style.display = '';
+
         if (this.checklistEl) {
             this.checklistEl.remove();
         }
