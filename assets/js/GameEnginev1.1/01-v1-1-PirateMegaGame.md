@@ -13,6 +13,7 @@ permalink: /gamify/PirateMegaGame
     // Adnventure Game assets locations
     import Core from "{{site.baseurl}}/assets/js/GameEnginev1.1/essentials/Game.js";
     import GameControl from "{{site.baseurl}}/assets/js/GameEnginev1.1/essentials/GameControl.js";
+    import MarketPirateGame from "{{site.baseurl}}assets/js/GameEnginev1.1/MarketPirateGame.js"
     import GameLevelPirateHunt from "{{site.baseurl}}/assets/js/GameEnginev1.1/GameLevelPirateHuntV1.js";
     import GameLevelPirateMegaGame2 from "{{site.baseurl}}/assets/js/GameEnginev1.1/GameLevelPirateMegaGame2V1.js";
     import GameLevelPirateBoss from "{{site.baseurl}}/assets/js/GameEnginev1.1/GameLevelPirateBossV1.js";
