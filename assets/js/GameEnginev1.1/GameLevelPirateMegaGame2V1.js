@@ -296,20 +296,20 @@ class GameLevelPirateMegaGame2 {
       knowledgeBase: {                   // Context hints for AI
           history: [
               {
-                  question: "I seek knowledge about history",
-                  answer: "Ancient Egypt was one of the world's greatest civilizations, lasting over 3000 years! It had pyramids, pharaohs, and the mighty Nile River."
+                  question: "I seek shelter from the cruel Pirate Blackbread.",
+                  answer: "Blackbread is a fearsome pirate who plagues these seas. Seek the hidden pot of gold my child, it shall bring you refuge. Godspeed on your quest, and may the winds of fortune fill your sails."
               },
               {
-                  question: "Tell me about the Renaissance",
-                  answer: "The Renaissance was a period of great cultural and artistic change in Europe, starting in Italy around the 14th century. Artists like Leonardo da Vinci and Michelangelo created amazing works!"
+                  question: "What is the weakness of fearsome Blackbread?",
+                  answer: "Blackbread's greed is his greatest weakness. He cannot resist the lure of treasure. He will go to great lengths to steal this map, Quickly child! Escape and save us all!"
               },
               {
-                  question: "When was the Industrial Revolution?",
-                  answer: "The Industrial Revolution took place from the late 1700s to the 1800s. It changed how people worked, moving from farms to factories and inventing new machines!"
+                  question: "Can’t you stop him? You’re stronger than I am!",
+                  answer: "Strength is not my burden. I am bound to guide, not to strike. The choice—and its cost—belongs to you alone."
               },
               {
-                  question: "Who was Napoleon?",
-                  answer: "Napoleon Bonaparte was a French military leader who became Emperor. He conquered much of Europe but was eventually defeated and exiled."
+                  question: "Can this map really help me defeat him?",
+                  answer: "The map does not grant victory. It grants revelation. What you do with it… becomes your legend. Go on my child, claim your Tale!"
               }
           ]
       },
