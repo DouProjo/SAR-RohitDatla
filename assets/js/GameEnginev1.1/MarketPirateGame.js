@@ -402,11 +402,11 @@ const MARKETPLACE_CSS = (path) => `
 
 // ── MarketplaceUI class ────────────────────────────────────────────────────────
 class MarketplaceUI {
-  constructor(path, onClose, inventory = []) {
+  constructor(path, onClose) {
     this.path   = path;
     this.onClose = onClose;
     this.coins   = 0;
-    this.inventory = Array.isArray(inventory) ? inventory : [];
+    this.inventory = [];
     this.currentTab = 'weapons';
     this._toastTimer = null;
 
@@ -638,269 +638,6 @@ class MarketplaceUI {
   getRubies() { return this.coins; }
 }
 
-// ── Tux sublevel battle UI ───────────────────────────────────────────────────
-class TuxBattleArena {
-  constructor(path, onClose, bagSupplier) {
-    this.onClose = onClose;
-    this.bagSupplier = bagSupplier || (() => []);
-    this.maxHp = 14;
-    this.playerHp = this.maxHp;
-    this.gemsEarned = 0;
-    this.enemyIndex = 0;
-    this.enemies = [
-      { name: 'Small Tux', icon: '🐧', maxHp: 8, hp: 8, atk: 2, desc: 'A cheeky tux waddles in.' },
-      { name: 'Frosty Tux', icon: '❄️', maxHp: 10, hp: 10, atk: 3, desc: 'A chilly tux shivers in battle.' },
-      { name: 'Alpha Tux', icon: '⛄', maxHp: 12, hp: 12, atk: 4, desc: 'The toughest tux of the den.' },
-    ];
-    this._injectCSS(path);
-    this._buildDOM();
-    this._bindEvents();
-    this._renderEnemy();
-    this._renderPlayer();
-    this._renderBag();
-    this._log('A wild Small Tux appeared!');
-  }
-
-  _injectCSS(path) {
-    if (document.getElementById('battle-style')) return;
-    const style = document.createElement('style');
-    style.id = 'battle-style';
-    style.textContent = `
-      #tba-overlay {
-        position: fixed;
-        inset: 0;
-        background: radial-gradient(circle at top, rgba(20,40,70,0.92), rgba(0,0,0,0.96));
-        z-index: 100000;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-family: 'Courier New', Courier, monospace;
-        color: #eef9ff;
-      }
-      #tba-panel {
-        width: min(860px, 90vw);
-        max-width: 860px;
-        background: linear-gradient(180deg, rgba(2,18,40,0.96) 0%, rgba(4,30,70,0.98) 100%);
-        border: 2px solid rgba(110,190,255,0.9);
-        border-radius: 18px;
-        padding: 24px;
-        box-shadow: 0 0 60px rgba(40,120,200,0.35);
-      }
-      #tba-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
-      #tba-header h2 { margin: 0; font-size: 22px; letter-spacing: 1px; }
-      #tba-header small { color: rgba(190,220,255,0.7); }
-      #tba-board { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 18px; }
-      .tba-card { background: rgba(9,24,52,0.9); border: 1px solid rgba(110,190,255,0.25); border-radius: 14px; padding: 16px; }
-      .tba-card h3 { margin: 0 0 10px; font-size: 16px; }
-      .tba-hp { display: flex; align-items: center; justify-content: space-between; margin-top: 12px; font-size: 13px; }
-      .tba-meter { width: 100%; height: 12px; background: rgba(255,255,255,0.16); border-radius: 8px; overflow: hidden; margin-top: 8px; }
-      .tba-meter-fill { height: 100%; background: linear-gradient(90deg, #78d1ff, #4f9cff); }
-      #tba-log { min-height: 76px; background: rgba(255,255,255,0.05); border: 1px solid rgba(110,190,255,0.2); border-radius: 10px; padding: 12px; font-size: 13px; line-height: 1.5; margin-bottom: 16px; }
-      #tba-actions { display: flex; gap: 12px; flex-wrap: wrap; }
-      .tba-action { flex: 1 1 120px; padding: 12px 14px; border-radius: 12px; border: 1px solid rgba(120,200,255,0.35); background: rgba(8,30,60,0.96); color: #e8f8ff; cursor: pointer; transition: transform 0.15s, background 0.15s; }
-      .tba-action:hover { background: rgba(90,170,255,0.18); transform: translateY(-1px); }
-      #tba-bag-panel { margin-top: 16px; max-height: 210px; overflow-y: auto; border: 1px solid rgba(110,190,255,0.2); border-radius: 12px; padding: 12px; background: rgba(10,24,45,0.95); }
-      .tba-bag-item { display: grid; grid-template-columns: 32px 1fr auto; gap: 10px; align-items: center; padding: 10px 0; border-bottom: 1px solid rgba(110,190,255,0.12); }
-      .tba-bag-item:last-child { border-bottom: none; }
-      .tba-bag-icon { font-size: 18px; }
-      .tba-bag-name { color: #cbe8ff; }
-      .tba-bag-use { background: rgba(54,120,205,0.92); border: none; padding: 6px 10px; border-radius: 8px; color: #eef9ff; cursor: pointer; }
-      .tba-bag-use:disabled { opacity: 0.4; cursor: not-allowed; }
-      .tba-empty { color: rgba(200,220,255,0.65); font-size: 13px; }
-    `;
-    document.head.appendChild(style);
-  }
-
-  _buildDOM() {
-    this.overlay = document.createElement('div');
-    this.overlay.id = 'tba-overlay';
-    this.overlay.innerHTML = `
-      <div id="tba-panel">
-        <div id="tba-header">
-          <div>
-            <h2>Tux Training Grounds</h2>
-            <small>Defeat each Small Tux to earn gems.</small>
-          </div>
-          <div id="tba-status">Ready for battle.</div>
-        </div>
-        <div id="tba-board">
-          <div class="tba-card">
-            <h3>McArchie</h3>
-            <div id="tba-player-hp" class="tba-hp">HP: 14/14</div>
-            <div class="tba-meter"><div id="tba-player-meter" class="tba-meter-fill" style="width:100%"></div></div>
-          </div>
-          <div class="tba-card">
-            <h3 id="tba-enemy-name">Small Tux</h3>
-            <div id="tba-enemy-hp" class="tba-hp">HP: 8/8</div>
-            <div class="tba-meter"><div id="tba-enemy-meter" class="tba-meter-fill" style="width:100%"></div></div>
-          </div>
-        </div>
-        <div id="tba-log">What will you do?</div>
-        <div id="tba-actions">
-          <button id="tba-attack" class="tba-action">Attack</button>
-          <button id="tba-bag" class="tba-action">Bag</button>
-          <button id="tba-run" class="tba-action">Run</button>
-        </div>
-        <div id="tba-bag-panel"></div>
-      </div>
-    `;
-    document.body.appendChild(this.overlay);
-    this.statusEl = this.overlay.querySelector('#tba-status');
-    this.logEl = this.overlay.querySelector('#tba-log');
-    this.playerHpEl = this.overlay.querySelector('#tba-player-hp');
-    this.playerMeterEl = this.overlay.querySelector('#tba-player-meter');
-    this.enemyNameEl = this.overlay.querySelector('#tba-enemy-name');
-    this.enemyHpEl = this.overlay.querySelector('#tba-enemy-hp');
-    this.enemyMeterEl = this.overlay.querySelector('#tba-enemy-meter');
-    this.bagPanelEl = this.overlay.querySelector('#tba-bag-panel');
-    this.attackBtn = this.overlay.querySelector('#tba-attack');
-    this.bagBtn = this.overlay.querySelector('#tba-bag');
-    this.runBtn = this.overlay.querySelector('#tba-run');
-    this.bagPanelEl.style.display = 'none';
-  }
-
-  _bindEvents() {
-    this.attackBtn.addEventListener('click', () => this._attack());
-    this.bagBtn.addEventListener('click', () => this._toggleBag());
-    this.runBtn.addEventListener('click', () => this._close());
-    this.bagPanelEl.addEventListener('click', (event) => {
-      const button = event.target.closest('.tba-bag-use');
-      if (!button) return;
-      const itemId = button.dataset.id;
-      this._useItem(itemId);
-    });
-  }
-
-  _currentEnemy() {
-    return this.enemies[this.enemyIndex];
-  }
-
-  _renderEnemy() {
-    const enemy = this._currentEnemy();
-    this.enemyNameEl.textContent = `${enemy.icon} ${enemy.name}`;
-    this.enemyHpEl.textContent = `HP: ${enemy.hp}/${enemy.maxHp}`;
-    const width = Math.max(0, Math.min(100, (enemy.hp / enemy.maxHp) * 100));
-    this.enemyMeterEl.style.width = `${width}%`;
-  }
-
-  _renderPlayer() {
-    this.playerHpEl.textContent = `HP: ${this.playerHp}/${this.maxHp}`;
-    const width = Math.max(0, Math.min(100, (this.playerHp / this.maxHp) * 100));
-    this.playerMeterEl.style.width = `${width}%`;
-  }
-
-  _renderBag() {
-    const bag = this.bagSupplier() || [];
-    if (!bag.length) {
-      this.bagPanelEl.innerHTML = '<div class="tba-empty">Your bag is empty. Buy potions in the market first.</div>';
-      return;
-    }
-    this.bagPanelEl.innerHTML = bag.map(item => `
-      <div class="tba-bag-item">
-        <div class="tba-bag-icon">${item.icon}</div>
-        <div class="tba-bag-name">${item.name}</div>
-        <button class="tba-bag-use" data-id="${item.id}" ${item.id.startsWith('p') || item.id === 'x4' ? '' : 'disabled'}>
-          ${item.id.startsWith('p') || item.id === 'x4' ? 'Use' : 'Inspect'}
-        </button>
-      </div>
-    `).join('');
-  }
-
-  _log(message) {
-    this.logEl.textContent = message;
-  }
-
-  _attack() {
-    const enemy = this._currentEnemy();
-    if (!enemy || enemy.hp <= 0) return;
-    const damage = 2 + Math.floor(Math.random() * 2);
-    enemy.hp = Math.max(0, enemy.hp - damage);
-    this._log(`You hit ${enemy.name} for ${damage} damage.`);
-    this._renderEnemy();
-    if (enemy.hp <= 0) {
-      return this._defeatEnemy();
-    }
-    setTimeout(() => this._enemyTurn(), 250);
-  }
-
-  _enemyTurn() {
-    const enemy = this._currentEnemy();
-    if (!enemy || enemy.hp <= 0) return;
-    const damage = enemy.atk + Math.floor(Math.random() * 2);
-    this.playerHp = Math.max(0, this.playerHp - damage);
-    this._renderPlayer();
-    if (this.playerHp <= 0) {
-      this._log(`${enemy.name} hit you for ${damage}! You fainted...`);
-      return setTimeout(() => this._close(), 1200);
-    }
-    this._log(`${enemy.name} hit you for ${damage}!`);
-  }
-
-  _defeatEnemy() {
-    const enemy = this._currentEnemy();
-    this.gemsEarned += 1;
-    this._log(`You defeated ${enemy.name}! +1 gem earned.`);
-    this.enemyIndex += 1;
-    if (this.enemyIndex >= this.enemies.length) {
-      return setTimeout(() => {
-        this._log(`All tux defeated! You earned ${this.gemsEarned} gems.`);
-        this._close();
-      }, 800);
-    }
-    setTimeout(() => {
-      const nextEnemy = this._currentEnemy();
-      this._log(`A wild ${nextEnemy.name} appears!`);
-      this._renderEnemy();
-    }, 800);
-  }
-
-  _toggleBag() {
-    if (!this.bagPanelEl) return;
-    this.bagPanelEl.style.display = this.bagPanelEl.style.display === 'block' ? 'none' : 'block';
-    if (this.bagPanelEl.style.display === 'block') {
-      this._renderBag();
-    }
-  }
-
-  _useItem(itemId) {
-    const bag = this.bagSupplier() || [];
-    const index = bag.findIndex(item => item.id === itemId);
-    if (index < 0) return;
-    const item = bag[index];
-    if (item.id.startsWith('p')) {
-      const heal = 6;
-      this.playerHp = Math.min(this.maxHp, this.playerHp + heal);
-      bag.splice(index, 1);
-      this._renderPlayer();
-      this._renderBag();
-      this._log(`${item.name} restored ${heal} HP.`);
-      return;
-    }
-    if (item.id === 'x4') {
-      const heal = 10;
-      this.playerHp = Math.min(this.maxHp, this.playerHp + heal);
-      bag.splice(index, 1);
-      this._renderPlayer();
-      this._renderBag();
-      this._log(`${item.name} surged your spirit for ${heal} HP.`);
-      return;
-    }
-    this._log(`You can't use ${item.name} in battle.`);
-  }
-
-  _close() {
-    if (typeof this.onClose === 'function') {
-      this.onClose(this.gemsEarned);
-    }
-    this.destroy();
-  }
-
-  destroy() {
-    if (this.overlay?.parentNode) this.overlay.remove();
-    this.overlay = null;
-  }
-}
-
 // ── Game Level ────────────────────────────────────────────────────────────────
 class MarketPirateGame {
   constructor(gameEnv) {
@@ -990,7 +727,7 @@ class MarketPirateGame {
     window.addEventListener('keydown', this._keyHandler);
 
     // ── Tux Dungeon gateway ──
-    this._bagInventory = [];s
+    this._bagInventory = [];
     this._battleOpen = false;
     this._battleArena = null;
     this._bankedGems = 0;
@@ -1003,6 +740,50 @@ class MarketPirateGame {
     this._renderBattleEntrance();
   }
 
+  // ── Map ruby spawning ──
+  _spawnMapRubies(n = 1) {
+    const container = this.gameEnv.gameContainer || document.getElementById('gameContainer') || document.body;
+    const rect = container.getBoundingClientRect();
+
+    const margin = 48;
+    const availableWidth  = Math.max(0, rect.width  - margin * 2);
+    const availableHeight = Math.max(0, rect.height - margin * 2);
+
+    for (let i = 0; i < n; i++) {
+      // Random position inside the visible game container, with a small edge margin
+      const x = margin + Math.random() * availableWidth;
+      const y = margin + Math.random() * availableHeight;
+      const pageX = rect.left + x;
+      const pageY = rect.top  + y;
+
+      const el = document.createElement('div');
+      el.className = 'mp-map-ruby';
+      el.style.left = pageX + 'px';
+      el.style.top  = pageY + 'px';
+      el.title = 'Ruby!';
+
+      // Also clickable directly
+      el.addEventListener('click', () => this._collectMapRuby(el));
+      document.body.appendChild(el);
+
+      this._mapRubies.push({ el, x, y });
+    }
+  }
+
+  _collectMapRuby(el) {
+    const idx = this._mapRubies.findIndex(r => r.el === el);
+    if (idx < 0) return;
+    this._mapRubies.splice(idx, 1);
+    el.style.transform = 'scale(0) translateY(-12px)';
+    el.style.opacity   = '0';
+    setTimeout(() => el.remove(), 220);
+    // Credit ruby to open shop if any, otherwise bank it for when shop opens
+    if (this._ui) {
+      this._ui.addRuby(1);
+    } else {
+      this._bankedRubies = (this._bankedRubies || 0) + 1;
+    }
+  }
 
   _playerInZone(player) {
     if (!player?.position) return false;
