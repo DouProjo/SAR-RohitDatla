@@ -1,6 +1,6 @@
 import GameEnvBackground from './essentials/GameEnvBackground.js';
 import Player from './essentials/Player.js';
-import Npc from './essentials/Npc.js';
+import CollectibleItem from './CollectibleItem.js';
 
 class GameLevelPirateHunt {
     // Initializes the pirate hunt level with background, player, NPCs, and the heist checklist UI
@@ -89,124 +89,64 @@ class GameLevelPirateHunt {
             keypress: { up: 87, left: 65, down: 83, right: 68 }
         };
 
-        /* ---------------- NPC 1 ---------------- */
+        /* ---------------- ITEM 1 ---------------- */
 
-        const npcData1 = {
+        const itemData1 = {
             id: 'Gold bar',
-            greeting: 'A gold bar...',
             src: path + "/images/gamebuilder/sprites/gold.png",
-
             SCALE_FACTOR: 12,
             ANIMATION_RATE: 100008,
-            INIT_POSITION: { x: 730, y: 350},
-
+            INIT_POSITION: { x: 730, y: 350 },
             pixels: { height: 279, width: 291 },
             orientation: { rows: 1, columns: 1 },
-            down: { row: 0, start: 0, columns: 1, rotate: 0 },
-
+            down: { row: 0, start: 0, columns: 1 },
             hitbox: { widthPercentage: 0.4, heightPercentage: 0.6 },
-
-            dialogues: [ "You collected the gold bar!" ],
-            interact: function() {
-                if (this.dialogueSystem && this.dialogueSystem.isDialogueOpen()) {
-                    this.dialogueSystem.closeDialogue();
-                    return;
-                }
-                if (this.dialogueSystem) {
-                    this.dialogueSystem.showDialogue("You collected the gold bar!", this.spriteData.id, this.spriteData.src);
-                    checkOff('check-goldbar', 'Gold Bar');
-                }
-            }
+            onCollect: () => checkOff('check-goldbar', 'Gold Bar')
         };
 
-        /* ---------------- NPC 2 ---------------- */
+        /* ---------------- ITEM 2 ---------------- */
 
-        const npcData2 = {
+        const itemData2 = {
             id: 'Chest',
-            greeting: 'A treasure chest...',
             src: path + "/images/gamebuilder/sprites/chest.png",
-
             SCALE_FACTOR: 7,
             ANIMATION_RATE: 1000000008,
             INIT_POSITION: { x: 390, y: 555 },
-
             pixels: { height: 449, width: 487 },
             orientation: { rows: 1, columns: 1 },
             down: { row: 0, start: 0, columns: 1 },
-
             hitbox: { widthPercentage: 0.4, heightPercentage: 0.6 },
-
-            dialogues: [ "You collected the chest!" ],
-            interact: function() {
-                if (this.dialogueSystem && this.dialogueSystem.isDialogueOpen()) {
-                    this.dialogueSystem.closeDialogue();
-                    return;
-                }
-                if (this.dialogueSystem) {
-                    this.dialogueSystem.showDialogue("You collected the chest!", this.spriteData.id, this.spriteData.src);
-                    checkOff('check-chest', 'Chest');
-                }
-            }
+            onCollect: () => checkOff('check-chest', 'Chest')
         };
 
-        /* ---------------- NPC 3 ---------------- */
+        /* ---------------- ITEM 3 ---------------- */
 
-        const npcData3 = {
+        const itemData3 = {
             id: 'Map',
-            greeting: 'A map...',
             src: path + "/images/gamebuilder/sprites/map.png",
-
             SCALE_FACTOR: 14,
             ANIMATION_RATE: 1000000008,
             INIT_POSITION: { x: 520, y: 320 },
-
             pixels: { height: 102, width: 128 },
             orientation: { rows: 1, columns: 1 },
             down: { row: 0, start: 0, columns: 1 },
-
             hitbox: { widthPercentage: 0.4, heightPercentage: 0.6 },
-
-            dialogues: [ "You collected the map!" ],
-            interact: function() {
-                if (this.dialogueSystem && this.dialogueSystem.isDialogueOpen()) {
-                    this.dialogueSystem.closeDialogue();
-                    return;
-                }
-                if (this.dialogueSystem) {
-                    this.dialogueSystem.showDialogue("You collected the map!", this.spriteData.id, this.spriteData.src);
-                    checkOff('check-map', 'Map');
-                }
-            }
+            onCollect: () => checkOff('check-map', 'Map')
         };
 
-        /* ---------------- NPC 4 ---------------- */
+        /* ---------------- ITEM 4 ---------------- */
 
-        const npcData4 = {
-            id: 'ruby',
-            greeting: 'A ruby...',
+        const itemData4 = {
+            id: 'Ruby',
             src: path + "/images/gamebuilder/sprites/ruby.png",
-
             SCALE_FACTOR: 12,
             ANIMATION_RATE: 1000000008,
             INIT_POSITION: { x: 1185, y: 555 },
-
             pixels: { height: 236, width: 370 },
             orientation: { rows: 1, columns: 1 },
             down: { row: 0, start: 0, columns: 1 },
-
             hitbox: { widthPercentage: 0.4, heightPercentage: 0.6 },
-
-            dialogues: [ "You collected the ruby!" ],
-            interact: function() {
-                if (this.dialogueSystem && this.dialogueSystem.isDialogueOpen()) {
-                    this.dialogueSystem.closeDialogue();
-                    return;
-                }
-                if (this.dialogueSystem) {
-                    this.dialogueSystem.showDialogue("You collected the ruby!", this.spriteData.id, this.spriteData.src);
-                    checkOff('check-ruby', 'Ruby');
-                }
-            }
+            onCollect: () => checkOff('check-ruby', 'Ruby')
         };
 
         /* -------- LEVEL OBJECTS -------- */
@@ -217,10 +157,10 @@ class GameLevelPirateHunt {
             { class: GameEnvBackground, data: bgData },
             { class: Player, data: playerData },
 
-            { class: Npc, data: npcData1 },
-            { class: Npc, data: npcData2 },
-            { class: Npc, data: npcData3 },
-            { class: Npc, data: npcData4 }
+            { class: CollectibleItem, data: itemData1 },
+            { class: CollectibleItem, data: itemData2 },
+            { class: CollectibleItem, data: itemData3 },
+            { class: CollectibleItem, data: itemData4 }
         ];
     }
 
