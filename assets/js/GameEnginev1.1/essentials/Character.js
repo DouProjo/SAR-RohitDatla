@@ -56,7 +56,12 @@ class Character extends GameObject {
 
         // Create canvas element
         this.canvas = document.createElement("canvas");
-        this.canvas.id = data.id || "default";
+        const idValue = (data && data.id) ? String(data.id).replace(/\s+/g, '_') : "default";
+        this.canvas.id = idValue;
+        if (data && data.id) {
+            this.data.id = idValue;
+            if (this.spriteData) this.spriteData.id = idValue;
+        }
         this.canvas.width = data.pixels?.width || PIXELS.width;
         this.canvas.height = data.pixels?.height || PIXELS.height;
         this.hitbox = data?.hitbox || {};

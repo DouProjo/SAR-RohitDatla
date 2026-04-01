@@ -48,6 +48,14 @@ class Npc extends Character {
         if (gameEnv && gameEnv.gameControl) {
             gameEnv.gameControl.registerInteractionHandler(this);
         }
+
+        console.log('[Npc] initialized', {
+            id: this.spriteData?.id,
+            canvasId: this.canvas?.id,
+            position: this.position,
+            size: { width: this.width, height: this.height },
+            zIndex: this.canvas?.style?.zIndex
+        });
     }
 
     update() {
@@ -55,7 +63,16 @@ class Npc extends Character {
         if (this.walkingArea) {
             this.patrol();
         }
+
+        // Make teacher NPC visually obvious by adding a debug outline and hover text
+        if (this.spriteData?.id === 'ProfessorHistory') {
+            this.canvas.style.border = '3px dashed yellow';
+            this.canvas.style.boxShadow = '0 0 14px 3px rgba(255,255,0,0.8)';
+            this.canvas.style.zIndex = '99999';
+        }
+
         this.draw();
+
         // Check if player is still in collision - add null checks
         const players = this.gameEnv.gameObjects.filter(
             obj => obj && obj.state && obj.state.collisionEvents && obj.state.collisionEvents.includes(this.spriteData.id)

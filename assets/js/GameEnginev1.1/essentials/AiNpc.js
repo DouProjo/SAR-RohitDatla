@@ -189,24 +189,30 @@ class AiNpc {
                 })
             });
 
+            if (!response.ok) {
+                throw new Error(`AI backend returned status ${response.status}`);
+            }
+
             const data = await response.json();
 
-            if (data.status === 'error') {
+            if (data.status === 'error' || (data.status && data.status !== 'ok' && data.status !== 'success')) {
+                const fallbackAnswer = spriteData.knowledgeBase?.[spriteData.expertise]?.[0]?.answer || "I'm having trouble thinking right now.";
                 AiNpc.showResponse(
-                    data.message || "I'm having trouble thinking right now.",
+                    data.message || fallbackAnswer,
                     responseArea
                 );
                 return;
             }
 
-            const aiResponse = data?.response || "I'm not sure how to answer that yet.";
+            const aiResponse = data?.response || spriteData.knowledgeBase?.[spriteData.expertise]?.[0]?.answer || "I'm not sure how to answer that yet.";
             spriteData.chatHistory.push({ role: 'ai', message: aiResponse });
             AiNpc.showResponse(aiResponse, responseArea);
 
         } catch (err) {
             console.error('Frontend error:', err);
+            const fallbackAnswer = spriteData.knowledgeBase?.[spriteData.expertise]?.[0]?.answer || "I'm having trouble reaching my brain right now.";
             AiNpc.showResponse(
-                "I'm having trouble reaching my brain right now.",
+                fallbackAnswer,
                 responseArea
             );
         }

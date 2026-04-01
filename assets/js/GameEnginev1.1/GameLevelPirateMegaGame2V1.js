@@ -3,6 +3,8 @@ import GameEnvBackground from './essentials/GameEnvBackground.js';
 import Player from './essentials/Player.js';
 import Character from './essentials/Character.js';
 import Npc from './essentials/Npc.js';
+import AiNpc from './essentials/AiNpc.js';
+import DialogueSystem from './essentials/DialogueSystem.js';
 
 class PathBarrier {
     constructor(x, y, w, h, gameEnv) {
@@ -166,6 +168,24 @@ class GameLevelPirateMegaGame2 {
 
     this.MAStartPosition = { x: 50, y: height * 0.75 };
 
+    // A clear on-screen instruction to find and talk to the historian
+    this.interactHint = document.createElement('div');
+    this.interactHint.style.position = 'absolute';
+    this.interactHint.style.bottom = '24px';
+    this.interactHint.style.left = '50%';
+    this.interactHint.style.transform = 'translateX(-50%)';
+    this.interactHint.style.padding = '10px 16px';
+    this.interactHint.style.background = 'rgba(0, 0, 0, 0.72)';
+    this.interactHint.style.color = '#ffd';
+    this.interactHint.style.fontFamily = 'Courier New, monospace';
+    this.interactHint.style.fontSize = '14px';
+    this.interactHint.style.border = '1px solid #4f82ff';
+    this.interactHint.style.borderRadius = '6px';
+    this.interactHint.style.zIndex = '99999';
+    this.interactHint.style.display = 'none';
+    this.interactHint.textContent = 'Get close to ProfessorHistory and press E to talk';
+    document.body.appendChild(this.interactHint);
+
     this.barriers = [
       new PathBarrier(0, 0, width * 0.28, height * 0.70, gameEnv),
       new PathBarrier(width * 0.38, height * 0.27, width * 0.22, height * 0.37, gameEnv),
@@ -236,14 +256,90 @@ class GameLevelPirateMegaGame2 {
      
      };
 
+       
+  const sprite_src_historian = path + "/images/gamify/historyProf.png";
+  const sprite_greet_historian = "Hello youngling, I am The Guardian of the Map!!";
+  const sprite_data_historian = {
+      id: "ProfessorHistory",
+      greeting: sprite_greet_historian,
+      src: sprite_src_historian,
+      SCALE_FACTOR: 3,
+      ANIMATION_RATE: 10,
+      zIndex: 99999,
+      visible: true,
+      pixels: { height: 263, width: 559 },
+      INIT_POSITION: { x: width * 0.04, y: height * 0.40 },
+      orientation: { rows: 4, columns: 9 },
+      
+      // LOCK: use ONLY the 4th row (index 3) for every direction/state
+      down:      { row: 3, start: 0, columns: 9 },
+      up:        { row: 3, start: 0, columns: 9 },
+      left:      { row: 3, start: 0, columns: 9 },
+      right:     { row: 3, start: 0, columns: 9 },
+      downLeft:  { row: 3, start: 0, columns: 9 },
+      downRight: { row: 3, start: 0, columns: 9 },
+      upLeft:    { row: 3, start: 0, columns: 9 },
+      upRight:   { row: 3, start: 0, columns: 9 },
+      
+      hitbox: { widthPercentage: 0.2, heightPercentage: 0.3 },
+      
+      // AI-specific properties (required for AiNpc utility)
+      expertise: "history",              // Topic area for backend
+      chatHistory: [],                   // Conversation memory
+      dialogues: [                       // Random greetings
+          "Another seeker approaches. I sense questions in your heart… and shadows at your back. Come forward.",
+          "By oath and by steel, I guard these sacred routes. Speak your purpose, wanderer, and I shall judge its truth.",
+          "I have watched kingdoms rise and crumble into dust. Tell me, traveler… what brings you to the crossroads of ages?",
+          "You stand before the Map Eternal. Few are permitted to gaze upon its paths. Fewer still return unchanged.",
+          "Paths converge, stars align, and shadows whisper your name. Welcome to the threshold of forgotten roads."
+      ],
+      knowledgeBase: {                   // Context hints for AI
+          history: [
+              {
+                  question: "I seek knowledge about history",
+                  answer: "Ancient Egypt was one of the world's greatest civilizations, lasting over 3000 years! It had pyramids, pharaohs, and the mighty Nile River."
+              },
+              {
+                  question: "Tell me about the Renaissance",
+                  answer: "The Renaissance was a period of great cultural and artistic change in Europe, starting in Italy around the 14th century. Artists like Leonardo da Vinci and Michelangelo created amazing works!"
+              },
+              {
+                  question: "When was the Industrial Revolution?",
+                  answer: "The Industrial Revolution took place from the late 1700s to the 1800s. It changed how people worked, moving from farms to factories and inventing new machines!"
+              },
+              {
+                  question: "Who was Napoleon?",
+                  answer: "Napoleon Bonaparte was a French military leader who became Emperor. He conquered much of Europe but was eventually defeated and exiled."
+              }
+          ]
+      },
+      
+      // Orchestrator: Handle collision/proximity reactions
+      reaction: function() {
+          if (this.dialogueSystem) {
+              this.showReactionDialogue();
+          } else {
+              console.log(sprite_greet_historian);
+          }
+      },
+      
+      // Orchestrator: Handle player interaction (E key press)
+      interact: function() {
+          // Delegate to AiNpc utility for full AI conversation interface
+          AiNpc.showInteraction(this);
+      }
+  };
+
+
     this.classes = [
       { class: GameEnvBackground, data: image_data_chase },
       { class: Player, data: sprite_data_MA },
       { class: Pirate, data: sprite_data_Pirate },
-      { class: Npc, data: npcData1 }
+      { class: Npc, data: npcData1 },
+      { class: Npc, data: sprite_data_historian },
+
     ];
   }
-
   showWinPopup() {
     this.winPopup.style.display = 'block';
     const btn = document.getElementById('winContinueBtn');
@@ -293,13 +389,38 @@ class GameLevelPirateMegaGame2 {
   update() {
     if (!this.gameEnv || !this.gameEnv.gameObjects) return;
 
+    if (!this._professorHistoryLogged) {
+      const historian = this.gameEnv.gameObjects.find(o => o?.spriteData?.id === 'ProfessorHistory');
+      if (!historian) {
+        console.warn('ProfessorHistory NPC object is missing from gameObjects.');
+      } else {
+        console.log('ProfessorHistory NPC object visible at', historian.position);
+      }
+      this._professorHistoryLogged = true;
+    }
+
     let player = null;
     let pirate = null;
+    let historian = null;
 
     this.gameEnv.gameObjects.forEach(obj => {
       if (obj instanceof Player) player = obj;
       if (obj instanceof Pirate) pirate = obj;
+      if (obj?.spriteData?.id === 'ProfessorHistory') historian = obj;
     });
+
+    if (this.interactHint && player && historian) {
+      const dx = (player.position.x + player.width / 2) - (historian.position.x + historian.width / 2);
+      const dy = (player.position.y + player.height / 2) - (historian.position.y + historian.height / 2);
+      const dist = Math.sqrt(dx*dx + dy*dy);
+      if (dist < 130) {
+        this.interactHint.style.display = 'block';
+      } else {
+        this.interactHint.style.display = 'none';
+      }
+    } else if (this.interactHint) {
+      this.interactHint.style.display = 'none';
+    }
 
     if (player && !this.wonGame && this.checkInZone(player, this.cottageZone)) {
       this.wonGame = true;
@@ -332,6 +453,7 @@ class GameLevelPirateMegaGame2 {
   destroy() {
     if (this.titleElement && this.titleElement.parentNode) this.titleElement.remove();
     if (this.winPopup && this.winPopup.parentNode) this.winPopup.remove();
+    if (this.interactHint && this.interactHint.parentNode) this.interactHint.remove();
   }
 }
 
