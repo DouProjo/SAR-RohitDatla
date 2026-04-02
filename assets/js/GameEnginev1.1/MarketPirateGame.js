@@ -93,14 +93,14 @@ const BATTLE_CSS = `
 #b-defeat-title{font-family:'Cinzel Decorative',cursive;color:#e03030;font-size:20px;letter-spacing:2px}
 #b-defeat-btn{background:rgba(80,20,10,.7);border:1.5px solid #802010;border-radius:8px;color:#f08060;font-family:'Cinzel Decorative',cursive;font-size:12px;padding:11px 32px;cursor:pointer;letter-spacing:1px;transition:background .15s}
 #b-defeat-btn:hover{background:rgba(140,40,20,.8)}
-.world-enemy{position:absolute;display:flex;flex-direction:column;align-items:center;gap:2px;z-index:9988;pointer-events:none;transition:opacity .3s;transform:translate(-50%, -50%);transform-origin:center center}
+.world-enemy{position:fixed;display:flex;flex-direction:column;align-items:center;gap:2px;z-index:9988;pointer-events:none;transition:opacity .3s;transform:translate(-50%,-50%);transform-origin:center center}
 .world-enemy.defeated{opacity:0;pointer-events:none}
 .world-enemy-icon{font-size:34px;animation:enemyBob 2s ease-in-out infinite;filter:drop-shadow(0 3px 8px rgba(0,0,0,.7))}
 @keyframes enemyBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
 .world-enemy-label{background:rgba(0,0,0,.75);border:1px solid rgba(200,60,20,.5);border-radius:4px;padding:2px 7px;font-family:'Cinzel Decorative',cursive;font-size:9px;color:#ff8860;white-space:nowrap}
 .world-enemy-hpbar{width:48px;height:5px;background:rgba(0,0,0,.5);border-radius:3px;overflow:hidden;border:1px solid rgba(200,60,20,.3)}
 .world-enemy-hpfill{height:100%;background:#c02020;border-radius:3px;transition:width .3s}
-.world-enemy-action{display:none;position:absolute;top:calc(100% + 8px);left:50%;transform:translateX(-50%);background:rgba(0,0,0,.9);border:1px solid rgba(200,120,40,.65);border-radius:8px;padding:6px 10px;font-family:'Cinzel Decorative',cursive;font-size:10px;color:#ffb970;white-space:nowrap;pointer-events:none;z-index:9990;}
+.world-enemy-action{display:none;position:absolute;top:calc(100% + 8px);left:50%;transform:translateX(-50%);background:rgba(0,0,0,.9);border:1px solid rgba(200,120,40,.65);border-radius:8px;padding:6px 10px;font-family:'Cinzel Decorative',cursive;font-size:10px;color:#ffb970;white-space:nowrap;pointer-events:none;z-index:9990}
 .world-enemy.has-hint .world-enemy-action{display:block}
 `;
 
@@ -167,11 +167,11 @@ class BattleUI {
     document.getElementById('b-enemy-name').textContent    = this.enemy.name;
     document.getElementById('b-enemy-hp-text').textContent = `${this.enemy.hp} / ${this.enemy.hp}`;
     const rarityColors = {
-      common:   { bg: 'rgba(80,80,80,.5)',  color: '#ccc' },
-      uncommon: { bg: 'rgba(20,100,30,.5)', color: '#90ee90' },
-      rare:     { bg: 'rgba(25,55,150,.5)', color: '#80b0ff' },
-      epic:     { bg: 'rgba(90,15,130,.5)', color: '#dd90ff' },
-      legendary:{ bg: 'rgba(160,90,0,.5)', color: '#ffc060' },
+      common:    { bg: 'rgba(80,80,80,.5)',  color: '#ccc'    },
+      uncommon:  { bg: 'rgba(20,100,30,.5)', color: '#90ee90' },
+      rare:      { bg: 'rgba(25,55,150,.5)', color: '#80b0ff' },
+      epic:      { bg: 'rgba(90,15,130,.5)', color: '#dd90ff' },
+      legendary: { bg: 'rgba(160,90,0,.5)', color: '#ffc060' },
     };
     const rc    = rarityColors[this.enemy.rarity] || rarityColors.common;
     const badge = document.getElementById('b-rarity-badge');
@@ -200,10 +200,10 @@ class BattleUI {
     const log = document.getElementById('battle-log');
     if (!log) return;
     const el = document.createElement('div');
-    el.className  = 'b-log-entry' + (cls ? ' ' + cls : '');
+    el.className   = 'b-log-entry' + (cls ? ' ' + cls : '');
     el.textContent = msg;
     log.appendChild(el);
-    log.scrollTop = log.scrollHeight;
+    log.scrollTop  = log.scrollHeight;
   }
 
   _updateBars() {
@@ -275,6 +275,7 @@ class BattleUI {
       return;
     }
 
+    // Enemy counter-attack
     const isPower = Math.random() < 0.2;
     let dmg = Math.max(1, this.enemy.atk + Math.floor(Math.random() * 6) - this.player.def);
     if (isPower)        dmg = Math.floor(dmg * 1.8);
@@ -303,7 +304,7 @@ class BattleUI {
   }
 
   async _showVictory() {
-    const [min, max] = this.enemy.reward;
+    const [min, max]   = this.enemy.reward;
     this._earnedRubies = min + Math.floor(Math.random() * (max - min + 1));
     document.getElementById('battle-actions').style.display = 'none';
     document.getElementById('battle-log').style.display    = 'none';
@@ -392,6 +393,8 @@ class MarketplaceUI {
     this.inventory   = [...initialInventory];
     this.currentTab  = 'weapons';
     this._toastTimer = null;
+    const old = document.getElementById('marketplace-style');
+    if (old) old.remove();
     this._injectCSS(path);
     this._buildDOM();
     this._bindEvents();
@@ -401,7 +404,6 @@ class MarketplaceUI {
   }
 
   _injectCSS(path) {
-    if (document.getElementById('marketplace-style')) return;
     const s = document.createElement('style');
     s.id = 'marketplace-style';
     s.textContent = MARKETPLACE_CSS(path);
@@ -559,15 +561,21 @@ class MarketplaceUI {
   getRubies()    { return this.coins; }
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// WorldEnemy — uses position:fixed so left/top are always in viewport space.
+// The constructor converts logical game coords → screen coords via the
+// container's getBoundingClientRect(), keeping enemies aligned with the canvas.
+// ─────────────────────────────────────────────────────────────────────────────
 class WorldEnemy {
-  constructor(enemyType, logicalX, logicalY, screenX, screenY, container = document.body) {
+  constructor(enemyType, logicalX, logicalY, container) {
     this.type     = enemyType;
     this.defeated = false;
     this.logicalX = logicalX;
     this.logicalY = logicalY;
+    this._container = container;
+
     this.el = document.createElement('div');
-    this.el.className     = 'world-enemy';
-    this.el.style.cssText = `left:${screenX}px;top:${screenY}px`;
+    this.el.className = 'world-enemy';
     this.el.innerHTML = `
       <div class="world-enemy-icon">${enemyType.icon}</div>
       <div class="world-enemy-label">${enemyType.name}</div>
@@ -575,17 +583,25 @@ class WorldEnemy {
       <div class="world-enemy-action"></div>
     `;
     this.hintEl = this.el.querySelector('.world-enemy-action');
-    this.container = container;
-    if (this.container) {
-      const style = window.getComputedStyle(this.container);
-      if (style.position === 'static') {
-        this.container.style.position = 'relative';
-      }
-      this.container.appendChild(this.el);
-    } else {
-      document.body.appendChild(this.el);
-    }
+
+    // Append to body so position:fixed works from the viewport origin
+    document.body.appendChild(this.el);
+
+    // Place using screen coordinates derived from the container's rect
+    this._syncPosition();
   }
+
+  // Convert logical game coords to fixed screen coords and apply them
+  _syncPosition() {
+    const rect = this._container.getBoundingClientRect();
+    const screenX = rect.left + this.logicalX;
+    const screenY = rect.top  + this.logicalY;
+    this.el.style.left = screenX + 'px';
+    this.el.style.top  = screenY + 'px';
+  }
+
+  // Call this after a resize so enemies stay on top of the correct spot
+  syncPosition() { this._syncPosition(); }
 
   markDefeated() {
     this.defeated = true;
@@ -642,7 +658,9 @@ class MarketPirateGame {
       }},
     ];
 
-    this.shopZone      = { x: width * 0.38, y: height * 0.30, width: width * 0.24, height: height * 0.40 };
+    this._shopZoneRatios = { x: 0.38, y: 0.30, w: 0.24, h: 0.40 };
+    this.shopZone        = this._computeShopZone();
+
     this._bagInventory = [];
     this._totalRubies  = 0;
     this._bankedRubies = 0;
@@ -670,7 +688,6 @@ class MarketPirateGame {
     });
     document.body.appendChild(this.hintEl);
 
-
     this._keyHandler = (e) => {
       if (e.key !== 'e' && e.key !== 'E') return;
       if (this._battleOpen || this._open) return;
@@ -686,12 +703,27 @@ class MarketPirateGame {
     this._spawnEnemies(8);
 
     this._respawnTimer = setInterval(() => {
-      const alive = this._worldEnemies.filter(e => !e.defeated).length;
-      if (alive < 4) {
-        this._worldEnemies = this._worldEnemies.filter(e => !e.defeated);
-        this._spawnEnemies(3);
-      }
+      this._worldEnemies = this._worldEnemies.filter(e => !e.defeated);
+      if (this._worldEnemies.length < 4) this._spawnEnemies(3);
     }, 25000);
+  }
+
+  // ── helpers ──────────────────────────────────────────────────────────────
+
+  _computeShopZone() {
+    const w  = this.gameEnv.innerWidth;
+    const h  = this.gameEnv.innerHeight;
+    const rz = this._shopZoneRatios;
+    return { x: w * rz.x, y: h * rz.y, width: w * rz.w, height: h * rz.h };
+  }
+
+  _getContainer() {
+    // Prefer the canvas element so logical coords map directly to screen coords
+    return this.gameEnv.canvas
+      || document.getElementById('gameCanvas')
+      || this.gameEnv.gameContainer
+      || document.getElementById('gameContainer')
+      || document.body;
   }
 
   _randomEnemyType() {
@@ -705,12 +737,16 @@ class MarketPirateGame {
   }
 
   _spawnEnemies(n) {
-    const width     = this.gameEnv.innerWidth;
-    const height    = this.gameEnv.innerHeight;
-    const margin    = 80;
-    const shopCx    = this.shopZone.x + this.shopZone.width  / 2;
-    const shopCy    = this.shopZone.y + this.shopZone.height / 2;
-    const container = this.gameEnv.gameContainer || document.getElementById('gameContainer') || document.body;
+    const container = this._getContainer();
+    const rect      = container.getBoundingClientRect();
+
+    // Use the container's actual rendered dimensions for spawn bounds
+    const width  = rect.width  || this.gameEnv.innerWidth;
+    const height = rect.height || this.gameEnv.innerHeight;
+
+    const margin = 80;
+    const shopCx = this.shopZone.x + this.shopZone.width  / 2;
+    const shopCy = this.shopZone.y + this.shopZone.height / 2;
 
     for (let i = 0; i < n; i++) {
       let lx, ly, tries = 0;
@@ -721,7 +757,7 @@ class MarketPirateGame {
       } while (Math.hypot(lx - shopCx, ly - shopCy) < 130 && tries < 25);
 
       this._worldEnemies.push(
-        new WorldEnemy(this._randomEnemyType(), lx, ly, lx, ly, container)
+        new WorldEnemy(this._randomEnemyType(), lx, ly, container)
       );
     }
   }
@@ -730,7 +766,7 @@ class MarketPirateGame {
     const player = this.gameEnv.gameObjects?.find(o => o instanceof Player);
     if (!player?.position) return null;
     return {
-      x: player.position.x + (player.width  || 0) * 0.45 / 2,
+      x: player.position.x + (player.width  || 0) * 0.5,
       y: player.position.y + (player.height || 0) * 0.8,
     };
   }
@@ -769,11 +805,13 @@ class MarketPirateGame {
 
   _playerInZone(player) {
     if (!player?.position) return false;
+    const px = player.position.x + (player.width  || 0) * 0.5;
+    const py = player.position.y + (player.height || 0) * 0.5;
     return (
-      player.position.x + (player.width  || 0) > this.shopZone.x &&
-      player.position.x                         < this.shopZone.x + this.shopZone.width &&
-      player.position.y + (player.height || 0) > this.shopZone.y &&
-      player.position.y                         < this.shopZone.y + this.shopZone.height
+      px > this.shopZone.x &&
+      px < this.shopZone.x + this.shopZone.width  &&
+      py > this.shopZone.y &&
+      py < this.shopZone.y + this.shopZone.height
     );
   }
 
@@ -799,6 +837,8 @@ class MarketPirateGame {
     );
   }
 
+  // ── game-loop callbacks ───────────────────────────────────────────────────
+
   update() {
     if (!this.gameEnv?.gameObjects) return;
     const player = this.gameEnv.gameObjects.find(o => o instanceof Player);
@@ -818,28 +858,37 @@ class MarketPirateGame {
     if (nearby) {
       nearby.showHint(`⚔ Fight ${nearby.type.name} — press E`);
       this.hintEl.style.display = 'none';
+    } else if (this._playerInZone(player)) {
+      this.hintEl.textContent   = '⚓ Enter the market — press E to shop';
+      this.hintEl.style.display = 'block';
     } else {
-      if (this._playerInZone(player)) {
-        this.hintEl.textContent   = '⚓ Enter the market — press E to shop';
-        this.hintEl.style.display = 'block';
-      } else {
-        this.hintEl.style.display = 'none';
-      }
+      this.hintEl.style.display = 'none';
     }
   }
 
-  draw()   {}
-  resize() {}
+  draw() {}
+
+  resize() {
+    // Recompute shop zone
+    this.shopZone = this._computeShopZone();
+
+    // Re-sync all enemy screen positions now that the container has moved/resized
+    const container = this._getContainer();
+    this._worldEnemies.forEach(e => {
+      e._container = container;
+      e.syncPosition();
+    });
+  }
 
   destroy() {
     window.removeEventListener('keydown', this._keyHandler);
     if (this._respawnTimer != null) clearInterval(this._respawnTimer);
-    if (Array.isArray(this._worldEnemies)) this._worldEnemies.forEach(e => e.remove());
+    const enemies = [...this._worldEnemies];
     this._worldEnemies = [];
-    if (this._battleUI)              this._battleUI.destroy();
-    if (this.hintEl?.parentNode)     this.hintEl.remove();
-    this._worldEnemies.forEach(e => e.hideHint());
-    if (this._ui)                    this._ui.destroy();
+    enemies.forEach(e => e.remove());
+    if (this._battleUI)          this._battleUI.destroy();
+    if (this.hintEl?.parentNode) this.hintEl.remove();
+    if (this._ui)                this._ui.destroy();
   }
 }
 
