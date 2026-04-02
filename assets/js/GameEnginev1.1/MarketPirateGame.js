@@ -561,11 +561,7 @@ class MarketplaceUI {
   getRubies()    { return this.coins; }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// WorldEnemy — uses position:fixed so left/top are always in viewport space.
-// The constructor converts logical game coords → screen coords via the
-// container's getBoundingClientRect(), keeping enemies aligned with the canvas.
-// ─────────────────────────────────────────────────────────────────────────────
+
 class WorldEnemy {
   constructor(enemyType, logicalX, logicalY, container) {
     this.type     = enemyType;
