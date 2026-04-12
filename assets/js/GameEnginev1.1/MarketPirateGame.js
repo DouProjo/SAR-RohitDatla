@@ -17,11 +17,11 @@ const SHOP_DATA = {
     { id: 'a5', name: "Poseidon's Plate",     icon: '🌊', desc: "The ocean itself yields to its wearer.",   price: 480, rarity: 'legendary', stats: ['+80 DEF', 'Sea Ward', 'Breathe Water'] },
   ],
   potions: [
-    { id: 'p1', name: "Monke Drink",           icon: '🍺', desc: "What doesn't kill ye makes ye stronger.",  price: 10,  rarity: 'common',    stats: ['+20 HP', 'Stackable'] },
-    { id: 'p2', name: "Sea Witch's Brew",     icon: '🧪', desc: "Green and bubbling. Probably fine. No worries",       price: 30,  rarity: 'uncommon',  stats: ['+50 HP', 'Random Buff'] },
-    { id: 'p3', name: "Mermaid's Tears",      icon: '💧', desc: "Rare and potent healing essence. Hard to get.",         price: 80,  rarity: 'rare',      stats: ['+120 HP', 'Cure Poison'] },
-    { id: 'p4', name: "Kraken Ink",           icon: '🦑', desc: "Grants brief invincibility + ink cloud.",  price: 180, rarity: 'epic',      stats: ['Invincible 10s', 'Blind Foes'] },
-    { id: 'p5', name: "Elixir of Eternity",   icon: '⚔️', desc: "A single drop of liquid immortality.",     price: 420, rarity: 'legendary', stats: ['Full HP', 'Revive', '+50 All Stats'] },
+    { id: 'p1', name: "Monke Drink",         icon: '🍺', desc: "Tastes awful. Heals a little.",             price: 10,  rarity: 'common',    stats: ['+8 HP',  'Stackable'] },
+    { id: 'p2', name: "Sea Witch's Brew",    icon: '🧪', desc: "Green and bubbling. Barely fine.",          price: 30,  rarity: 'uncommon',  stats: ['+18 HP', 'Random Buff'] },
+    { id: 'p3', name: "Mermaid's Tears",     icon: '💧', desc: "Rare essence — hard to get, worth it.",     price: 80,  rarity: 'rare',      stats: ['+35 HP', 'Cure Poison'] },
+    { id: 'p4', name: "Kraken Ink",          icon: '🦑', desc: "Grants brief invincibility + ink cloud.",   price: 180, rarity: 'epic',      stats: ['Invincible 10s', 'Blind Foes'] },
+    { id: 'p5', name: "Elixir of Eternity",  icon: '⚔️', desc: "A single drop of liquid immortality.",      price: 420, rarity: 'legendary', stats: ['Full HP', 'Revive', '+50 All Stats'] },
   ],
   maps: [
     { id: 'm1', name: "Torn Map Fragment",    icon: '📄', desc: "A piece of a greater treasure map.",       price: 15,  rarity: 'common',    stats: ['Fragment 1/4'] },
@@ -40,12 +40,12 @@ const SHOP_DATA = {
 };
 
 const ENEMY_TYPES = [
-  { id: 'skeleton', name: 'Skeleton Guard',  icon: '💀', hp: 30,  atk: 6,  def: 2,  reward: [3,  6],  rarity: 'common'   },
-  { id: 'rat',      name: 'Giant Rat', icon: '🐀', hp: 20,  atk: 4,  def: 1,  reward: [2,  4],  rarity: 'common'   },
-  { id: 'ghost',    name: 'Ghost Sailor',      icon: '👻', hp: 45,  atk: 9,  def: 4,  reward: [6,  10], rarity: 'uncommon' },
-  { id: 'pirate',   name: 'Rival Pirate',    icon: '🏴‍☠️', hp: 55,  atk: 12, def: 5,  reward: [8,  14], rarity: 'uncommon' },
-  { id: 'kraken',   name: 'Baby Fire Bird',     icon: '🐦‍🔥', hp: 80,  atk: 16, def: 8,  reward: [15, 22], rarity: 'rare'     },
-  { id: 'davy',     name: "Luffy the Monke's Wrath",    icon: '⚓', hp: 120, atk: 22, def: 12, reward: [25, 35], rarity: 'epic'     },
+  { id: 'skeleton', name: 'Skeleton Guard',           icon: '💀', hp: 30,  atk: 10, def: 2,  reward: [3,  6],  rarity: 'common'   },
+  { id: 'rat',      name: 'Giant Rat',                icon: '🐀', hp: 20,  atk: 7,  def: 1,  reward: [2,  4],  rarity: 'common'   },
+  { id: 'ghost',    name: 'Ghost Sailor',             icon: '👻', hp: 45,  atk: 14, def: 4,  reward: [6,  10], rarity: 'uncommon' },
+  { id: 'pirate',   name: 'Rival Pirate',             icon: '🏴‍☠️', hp: 55,  atk: 18, def: 5,  reward: [8,  14], rarity: 'uncommon' },
+  { id: 'kraken',   name: 'Baby Fire Bird',           icon: '🐦‍🔥', hp: 80,  atk: 24, def: 8,  reward: [15, 22], rarity: 'rare'     },
+  { id: 'davy',     name: "Luffy the Monke's Wrath",  icon: '⚓', hp: 120, atk: 32, def: 12, reward: [25, 35], rarity: 'epic'     },
 ];
 
 const BATTLE_CSS = `
@@ -102,13 +102,27 @@ const BATTLE_CSS = `
 .world-enemy-hpfill{height:100%;background:#c02020;border-radius:3px;transition:width .3s}
 .world-enemy-action{display:none;position:absolute;top:calc(100% + 8px);left:50%;transform:translateX(-50%);background:rgba(0,0,0,.9);border:1px solid rgba(200,120,40,.65);border-radius:8px;padding:6px 10px;font-family:'Cinzel Decorative',cursive;font-size:10px;color:#ffb970;white-space:nowrap;pointer-events:none;z-index:9990}
 .world-enemy.has-hint .world-enemy-action{display:block}
+#gameover-overlay{position:fixed;inset:0;z-index:999999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0);backdrop-filter:blur(0px);transition:background 1.2s ease,backdrop-filter 1.2s ease;pointer-events:none}
+#gameover-overlay.show{background:rgba(0,0,0,.92);backdrop-filter:blur(6px);pointer-events:all}
+#gameover-panel{display:flex;flex-direction:column;align-items:center;gap:18px;padding:48px 52px;background:linear-gradient(160deg,#1a0000 0%,#060006 100%);border:3px solid #6a0000;border-radius:20px;box-shadow:0 0 100px rgba(180,0,0,.4),inset 0 0 80px rgba(0,0,0,.7);font-family:'IM Fell English',serif;opacity:0;transform:scale(.88);transition:opacity .8s ease .4s,transform .8s ease .4s}
+#gameover-overlay.show #gameover-panel{opacity:1;transform:scale(1)}
+#gameover-skull{font-size:80px;animation:goFloat 3s ease-in-out infinite}
+@keyframes goFloat{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-10px) rotate(3deg)}}
+#gameover-title{font-family:'Cinzel Decorative',cursive;color:#cc0000;font-size:36px;letter-spacing:4px;text-shadow:0 0 40px rgba(200,0,0,.8),0 0 80px rgba(200,0,0,.4)}
+#gameover-sub{color:rgba(200,140,100,.7);font-size:14px;font-style:italic;text-align:center;line-height:1.7;max-width:320px}
+#gameover-stats{display:flex;gap:28px;padding:14px 24px;background:rgba(0,0,0,.4);border:1px solid rgba(150,50,50,.3);border-radius:10px}
+.go-stat{display:flex;flex-direction:column;align-items:center;gap:4px}
+.go-stat-val{font-family:'Cinzel Decorative',cursive;color:#e8a020;font-size:22px}
+.go-stat-lbl{color:rgba(180,130,80,.6);font-size:10px;font-family:'Cinzel Decorative',cursive;letter-spacing:1px}
+#gameover-btn{margin-top:8px;background:rgba(140,0,0,.7);border:2px solid #aa0000;border-radius:10px;color:#ff6060;font-family:'Cinzel Decorative',cursive;font-size:13px;padding:13px 40px;cursor:pointer;letter-spacing:2px;transition:background .2s,transform .15s;text-transform:uppercase}
+#gameover-btn:hover{background:rgba(200,20,20,.8);color:#fff;transform:scale(1.04)}
 `;
 
 class BattleUI {
-  constructor(enemyType, onClose) {
+  constructor(enemyType, onClose, startingHp = 80) {
     this.onClose       = onClose;
     this.enemy         = { ...enemyType, curHp: enemyType.hp };
-    this.player        = { name: 'McArchie', maxHp: 80, curHp: 80, atk: 10, def: 3 };
+    this.player        = { name: 'McArchie', maxHp: 80, curHp: startingHp, atk: 10, def: 3 };
     this.defending     = false;
     this.busy          = false;
     this._earnedRubies = 0;
@@ -131,7 +145,7 @@ class BattleUI {
             <div class="b-fighter-icon" id="b-player-icon">🏴‍☠️</div>
             <div class="b-fighter-name">McArchie</div>
             <div class="b-hp-bar-wrap"><div class="b-hp-bar player" id="b-player-hp" style="width:100%"></div></div>
-            <div class="b-hp-text" id="b-player-hp-text">80 / 80</div>
+            <div class="b-hp-text" id="b-player-hp-text">${this.player.curHp} / ${this.player.maxHp}</div>
           </div>
           <div id="b-vs">VS</div>
           <div class="b-fighter">
@@ -166,6 +180,10 @@ class BattleUI {
     document.getElementById('b-enemy-icon').textContent    = this.enemy.icon;
     document.getElementById('b-enemy-name').textContent    = this.enemy.name;
     document.getElementById('b-enemy-hp-text').textContent = `${this.enemy.hp} / ${this.enemy.hp}`;
+
+    // Set player HP bar to reflect carried-over HP
+    this._updateBars();
+
     const rarityColors = {
       common:    { bg: 'rgba(80,80,80,.5)',  color: '#ccc'    },
       uncommon:  { bg: 'rgba(20,100,30,.5)', color: '#90ee90' },
@@ -186,13 +204,14 @@ class BattleUI {
     document.getElementById('b-defend').addEventListener('click',  () => this._playerAction('defend'));
     document.getElementById('b-flee').addEventListener('click',    () => this._playerAction('flee'));
     document.getElementById('b-reward-btn').addEventListener('click', () => {
-      const r = this._earnedRubies;
+      const r  = this._earnedRubies;
+      const hp = this.player.curHp;
       this.destroy();
-      this.onClose?.(r, false);
+      this.onClose?.(r, false, hp);
     });
     document.getElementById('b-defeat-btn').addEventListener('click', () => {
       this.destroy();
-      this.onClose?.(0, true);
+      this.onClose?.(0, true, 0);
     });
   }
 
@@ -209,10 +228,24 @@ class BattleUI {
   _updateBars() {
     const pp = Math.max(0, this.player.curHp / this.player.maxHp * 100);
     const ep = Math.max(0, this.enemy.curHp  / this.enemy.hp    * 100);
-    document.getElementById('b-player-hp').style.width      = pp + '%';
-    document.getElementById('b-enemy-hp').style.width       = ep + '%';
-    document.getElementById('b-player-hp-text').textContent = `${Math.max(0, this.player.curHp)} / ${this.player.maxHp}`;
-    document.getElementById('b-enemy-hp-text').textContent  = `${Math.max(0, this.enemy.curHp)} / ${this.enemy.hp}`;
+    const playerBar = document.getElementById('b-player-hp');
+    if (playerBar) {
+      playerBar.style.width = pp + '%';
+      // Change colour based on HP level
+      if (pp > 50) {
+        playerBar.style.background = 'linear-gradient(90deg,#20a050,#40e080)';
+      } else if (pp > 25) {
+        playerBar.style.background = 'linear-gradient(90deg,#a08020,#e0c030)';
+      } else {
+        playerBar.style.background = 'linear-gradient(90deg,#a02020,#e05030)';
+      }
+    }
+    const enemyBar = document.getElementById('b-enemy-hp');
+    if (enemyBar) enemyBar.style.width = ep + '%';
+    const pText = document.getElementById('b-player-hp-text');
+    if (pText) pText.textContent = `${Math.max(0, this.player.curHp)} / ${this.player.maxHp}`;
+    const eText = document.getElementById('b-enemy-hp-text');
+    if (eText) eText.textContent = `${Math.max(0, this.enemy.curHp)} / ${this.enemy.hp}`;
   }
 
   _shake(id) {
@@ -261,7 +294,7 @@ class BattleUI {
         await this._wait(900);
         this.busy = false;
         this.destroy();
-        this.onClose?.(0, false);
+        this.onClose?.(0, false, this.player.curHp);
         return;
       }
       this._log(`💨 Couldn't flee — the enemy blocks the way!`);
@@ -386,9 +419,10 @@ const MARKETPLACE_CSS = (path) => `
 `;
 
 class MarketplaceUI {
-  constructor(path, onClose, initialInventory = [], initialRubies = 0) {
+  constructor(path, onClose, initialInventory = [], initialRubies = 0, onHeal = null) {
     this.path        = path;
     this.onClose     = onClose;
+    this.onHeal      = onHeal;   // callback(healAmount) fired when player drinks a potion
     this.coins       = initialRubies;
     this.inventory   = [...initialInventory];
     this.currentTab  = 'weapons';
@@ -479,9 +513,16 @@ class MarketplaceUI {
       const statsHtml = item.stats.map(s =>
         `<span class="mp-stat ${s.startsWith('+') ? 'pos' : s.startsWith('-') ? 'neg' : ''}">${s}</span>`
       ).join('');
-      const actionHtml = owned
-        ? `<button class="mp-sell-btn" data-id="${item.id}">Sell for ${Math.floor(item.price * 0.5)} ◈</button>`
-        : `<button class="mp-buy-btn" data-id="${item.id}" ${canBuy ? '' : 'disabled'}>${canBuy ? 'Purchase' : 'Need ' + (item.price - this.coins) + ' more'}</button>`;
+      const isPotion = this.currentTab === 'potions';
+      let actionHtml;
+      if (isPotion) {
+        // Potions: always purchasable (stackable), button buys AND uses immediately
+        actionHtml = `<button class="mp-buy-btn" data-id="${item.id}" data-potion="1" ${canBuy ? '' : 'disabled'}>${canBuy ? '🍺 Drink Now' : 'Need ' + (item.price - this.coins) + ' more'}</button>`;
+      } else {
+        actionHtml = owned
+          ? `<button class="mp-sell-btn" data-id="${item.id}">Sell for ${Math.floor(item.price * 0.5)} ◈</button>`
+          : `<button class="mp-buy-btn" data-id="${item.id}" ${canBuy ? '' : 'disabled'}>${canBuy ? 'Purchase' : 'Need ' + (item.price - this.coins) + ' more'}</button>`;
+      }
       card.innerHTML = `
         <div class="mp-rarity r-${item.rarity}">${item.rarity.toUpperCase()}</div>
         <div class="mp-icon">${item.icon}</div>
@@ -491,8 +532,12 @@ class MarketplaceUI {
         <div class="mp-price"><div class="mp-price-ruby"></div><div class="mp-price-num">${item.price}</div></div>
         ${actionHtml}
       `;
-      card.querySelector('[data-id]')?.addEventListener('click', () => {
-        owned ? this._sell(item.id) : this._buy(item.id);
+      card.querySelector('[data-id]')?.addEventListener('click', (e) => {
+        if (e.currentTarget.dataset.potion) {
+          this._drinkPotion(item.id);
+        } else {
+          owned ? this._sell(item.id) : this._buy(item.id);
+        }
       });
       this.shopGrid.appendChild(card);
     });
@@ -505,6 +550,27 @@ class MarketplaceUI {
     this.inventory.push(item);
     this._updateHUD(); this._renderShop(); this._renderInventory();
     this._toast(`${item.icon} ${item.name} acquired!`, 'success');
+  }
+
+  _drinkPotion(id) {
+    const item = this._findItem(id);
+    if (!item || this.coins < item.price) { this._toast('Not enough rubies!', 'err'); return; }
+    // Parse heal amount from the stats array e.g. '+20 HP', '+50 HP', 'Full HP'
+    let healAmt = 0;
+    const fullHeal = item.stats.some(s => s === 'Full HP');
+    if (fullHeal) {
+      healAmt = 9999; // signal to heal to max
+    } else {
+      for (const s of item.stats) {
+        const m = s.match(/\+(\d+)\s*HP/i);
+        if (m) { healAmt = parseInt(m[1], 10); break; }
+      }
+    }
+    this.coins -= item.price;
+    this._updateHUD();
+    this._renderShop();
+    this.onHeal?.(healAmt, item, fullHeal);
+    this._toast(`${item.icon} ${item.name} — restored ${fullHeal ? 'full' : healAmt} HP!`, 'success');
   }
 
   _sell(id) {
@@ -580,23 +646,18 @@ class WorldEnemy {
     `;
     this.hintEl = this.el.querySelector('.world-enemy-action');
 
-    // Append to body so position:fixed works from the viewport origin
     document.body.appendChild(this.el);
-
-    // Place using screen coordinates derived from the container's rect
     this._syncPosition();
   }
 
-  // Convert logical game coords to fixed screen coords and apply them
   _syncPosition() {
-    const rect = this._container.getBoundingClientRect();
+    const rect    = this._container.getBoundingClientRect();
     const screenX = rect.left + this.logicalX;
     const screenY = rect.top  + this.logicalY;
     this.el.style.left = screenX + 'px';
     this.el.style.top  = screenY + 'px';
   }
 
-  // Call this after a resize so enemies stay on top of the correct spot
   syncPosition() { this._syncPosition(); }
 
   markDefeated() {
@@ -657,15 +718,19 @@ class MarketPirateGame {
     this._shopZoneRatios = { x: 0.38, y: 0.30, w: 0.24, h: 0.40 };
     this.shopZone        = this._computeShopZone();
 
-    this._bagInventory = [];
-    this._totalRubies  = 0;
-    this._bankedRubies = 0;
-    this._battleOpen   = false;
-    this._battleUI     = null;
-    this._worldEnemies = [];
-    this._nearbyEnemy  = null;
-    this._open         = false;
-    this._ui           = null;
+    this._bagInventory  = [];
+    this._totalRubies   = 0;
+    this._bankedRubies  = 0;
+    this._battleOpen    = false;
+    this._battleUI      = null;
+    this._worldEnemies  = [];
+    this._nearbyEnemy   = null;
+    this._open          = false;
+    this._ui            = null;
+
+    // ── Persistent player HP ──────────────────────────────────────────────
+    this._playerMaxHp  = 80;
+    this._playerCurHp  = 80;
 
     if (!document.getElementById('battle-style')) {
       const s = document.createElement('style');
@@ -674,13 +739,47 @@ class MarketPirateGame {
       document.head.appendChild(s);
     }
 
+    // ── World health bar (top-left HUD) ───────────────────────────────────
+    this.healthBarEl = document.createElement('div');
+    this.healthBarEl.id = 'world-health-hud';
+    this.healthBarEl.innerHTML = `
+      <div style="font-family:'Cinzel Decorative',cursive;color:#e8a020;font-size:10px;letter-spacing:1px;margin-bottom:5px;">⚔ McArchie</div>
+      <div style="background:rgba(0,0,0,.55);border:1.5px solid rgba(80,200,80,.25);border-radius:7px;height:15px;width:170px;overflow:hidden;">
+        <div id="world-hp-fill" style="height:100%;width:100%;background:linear-gradient(90deg,#20a050,#40e080);border-radius:6px;transition:width .45s ease,background .45s ease;"></div>
+      </div>
+      <div id="world-hp-text" style="font-family:'Cinzel Decorative',cursive;font-size:10px;color:#c8a040;margin-top:4px;text-align:right;">80 / 80</div>
+    `;
+    Object.assign(this.healthBarEl.style, {
+      position:     'fixed',
+      bottom:       '28px',
+      left:         '16px',
+      padding:      '10px 16px',
+      background:   'rgba(0,0,0,.75)',
+      border:       '1.5px solid #7a3a08',
+      borderRadius: '10px',
+      zIndex:       '9990',
+      display:      'block',
+      boxShadow:    '0 0 18px rgba(180,80,10,.2)',
+    });
+    document.body.appendChild(this.healthBarEl);
+
+    // ── Hint bar ──────────────────────────────────────────────────────────
     this.hintEl = document.createElement('div');
     Object.assign(this.hintEl.style, {
-      position: 'fixed', bottom: '28px', left: '50%', transform: 'translateX(-50%)',
-      padding: '9px 18px', background: 'rgba(0,0,0,.76)', color: '#ffd',
-      fontFamily: '"Cinzel Decorative",Courier,monospace', fontSize: '13px',
-      border: '1.5px solid #c08030', borderRadius: '7px', zIndex: '9999',
-      display: 'none', letterSpacing: '1px',
+      position:     'fixed',
+      bottom:       '28px',
+      left:         '50%',
+      transform:    'translateX(-50%)',
+      padding:      '9px 18px',
+      background:   'rgba(0,0,0,.76)',
+      color:        '#ffd',
+      fontFamily:   '"Cinzel Decorative",Courier,monospace',
+      fontSize:     '13px',
+      border:       '1.5px solid #c08030',
+      borderRadius: '7px',
+      zIndex:       '9999',
+      display:      'none',
+      letterSpacing:'1px',
     });
     document.body.appendChild(this.hintEl);
 
@@ -714,7 +813,6 @@ class MarketPirateGame {
   }
 
   _getContainer() {
-    // Prefer the canvas element so logical coords map directly to screen coords
     return this.gameEnv.canvas
       || document.getElementById('gameCanvas')
       || this.gameEnv.gameContainer
@@ -735,14 +833,11 @@ class MarketPirateGame {
   _spawnEnemies(n) {
     const container = this._getContainer();
     const rect      = container.getBoundingClientRect();
-
-    // Use the container's actual rendered dimensions for spawn bounds
-    const width  = rect.width  || this.gameEnv.innerWidth;
-    const height = rect.height || this.gameEnv.innerHeight;
-
-    const margin = 80;
-    const shopCx = this.shopZone.x + this.shopZone.width  / 2;
-    const shopCy = this.shopZone.y + this.shopZone.height / 2;
+    const width     = rect.width  || this.gameEnv.innerWidth;
+    const height    = rect.height || this.gameEnv.innerHeight;
+    const margin    = 80;
+    const shopCx    = this.shopZone.x + this.shopZone.width  / 2;
+    const shopCy    = this.shopZone.y + this.shopZone.height / 2;
 
     for (let i = 0; i < n; i++) {
       let lx, ly, tries = 0;
@@ -779,24 +874,54 @@ class MarketPirateGame {
     return closest;
   }
 
+  // ── Persistent HP helpers ─────────────────────────────────────────────────
+
+  _updateWorldHP() {
+    const fill = document.getElementById('world-hp-fill');
+    const text = document.getElementById('world-hp-text');
+    if (!fill || !text) return;
+    const pct = Math.max(0, (this._playerCurHp / this._playerMaxHp) * 100);
+    fill.style.width = pct + '%';
+    if (pct > 50) {
+      fill.style.background = 'linear-gradient(90deg,#20a050,#40e080)';
+    } else if (pct > 25) {
+      fill.style.background = 'linear-gradient(90deg,#a08020,#e0c030)';
+    } else {
+      fill.style.background = 'linear-gradient(90deg,#a02020,#e05030)';
+    }
+    text.textContent = `${Math.max(0, this._playerCurHp)} / ${this._playerMaxHp}`;
+  }
+
+  // ── Battle ────────────────────────────────────────────────────────────────
+
   _startBattle(worldEnemy) {
     if (this._battleOpen) return;
     this._battleOpen  = true;
     this._nearbyEnemy = null;
     this._worldEnemies.forEach(e => e.hideHint());
 
-    this._battleUI = new BattleUI(worldEnemy.type, (rubyReward, wasDefeated) => {
-      this._battleOpen = false;
-      this._battleUI   = null;
-      if (!wasDefeated && rubyReward > 0) {
-        worldEnemy.markDefeated();
-        if (this._ui) {
-          this._ui.addRuby(rubyReward);
-        } else { 
-          this._bankedRubies += rubyReward;
+    this._battleUI = new BattleUI(
+      worldEnemy.type,
+      (rubyReward, wasDefeated, remainingHp) => {
+        this._battleOpen = false;
+        this._battleUI   = null;
+
+        if (wasDefeated) {
+          // Full game over — show screen then wipe all progress
+          this._showGameOver();
+        } else {
+          this._playerCurHp = Math.max(1, remainingHp);
+          this._updateWorldHP();
+          if (rubyReward > 0) {
+            worldEnemy.markDefeated();
+            this._killCount = (this._killCount || 0) + 1;
+            if (this._ui) this._ui.addRuby(rubyReward);
+            else          this._bankedRubies += rubyReward;
+          }
         }
-      }
-    });
+      },
+      this._playerCurHp
+    );
   }
 
   _playerInZone(player) {
@@ -829,8 +954,77 @@ class MarketPirateGame {
         this._ui   = null;
       },
       this._bagInventory,
-      startingRubies
+      startingRubies,
+      (healAmt, item, fullHeal) => this._healPlayer(healAmt, fullHeal)
     );
+  }
+
+  _healPlayer(healAmt, fullHeal = false) {
+    if (fullHeal) {
+      this._playerCurHp = this._playerMaxHp;
+    } else {
+      this._playerCurHp = Math.min(this._playerMaxHp, this._playerCurHp + healAmt);
+    }
+    this._updateWorldHP();
+  }
+
+  _showGameOver() {
+    // Close any open UI first
+    if (this._ui) { this._ui.destroy(); this._ui = null; }
+
+    const rubiesEarned = this._totalRubies + this._bankedRubies;
+    const kills        = this._killCount || 0;
+
+    const overlay = document.createElement('div');
+    overlay.id = 'gameover-overlay';
+    overlay.innerHTML = `
+      <div id="gameover-panel">
+        <div id="gameover-skull">💀</div>
+        <div id="gameover-title">GAME OVER</div>
+        <div id="gameover-sub">
+          The seas claimed another soul...<br>
+          Ye fought bravely, but death waits for all pirates.
+        </div>
+        <div id="gameover-stats">
+          <div class="go-stat">
+            <div class="go-stat-val">${kills}</div>
+            <div class="go-stat-lbl">Enemies Slain</div>
+          </div>
+          <div class="go-stat">
+            <div class="go-stat-val">💎 ${rubiesEarned}</div>
+            <div class="go-stat-lbl">Rubies Earned</div>
+          </div>
+        </div>
+        <button id="gameover-btn">⚓ Try Again</button>
+      </div>
+    `;
+    document.body.appendChild(overlay);
+
+    // Animate in
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => overlay.classList.add('show'));
+    });
+
+    document.getElementById('gameover-btn').addEventListener('click', () => {
+      overlay.remove();
+      this._hardReset();
+    });
+  }
+
+  _hardReset() {
+    // Wipe all progress — rubies, inventory, HP, enemies, kill count
+    this._playerCurHp  = this._playerMaxHp;
+    this._totalRubies  = 0;
+    this._bankedRubies = 0;
+    this._bagInventory = [];
+    this._killCount    = 0;
+    this._updateWorldHP();
+
+    // Clear all existing enemies and respawn fresh
+    const existing = [...this._worldEnemies];
+    this._worldEnemies = [];
+    existing.forEach(e => e.remove());
+    this._spawnEnemies(8);
   }
 
   // ── game-loop callbacks ───────────────────────────────────────────────────
@@ -865,10 +1059,7 @@ class MarketPirateGame {
   draw() {}
 
   resize() {
-    // Recompute shop zone
     this.shopZone = this._computeShopZone();
-
-    // Re-sync all enemy screen positions now that the container has moved/resized
     const container = this._getContainer();
     this._worldEnemies.forEach(e => {
       e._container = container;
@@ -882,9 +1073,11 @@ class MarketPirateGame {
     const enemies = [...this._worldEnemies];
     this._worldEnemies = [];
     enemies.forEach(e => e.remove());
-    if (this._battleUI)          this._battleUI.destroy();
-    if (this.hintEl?.parentNode) this.hintEl.remove();
-    if (this._ui)                this._ui.destroy();
+    if (this._battleUI)                this._battleUI.destroy();
+    if (this.hintEl?.parentNode)       this.hintEl.remove();
+    if (this.healthBarEl?.parentNode)  this.healthBarEl.remove();
+    if (this._ui)                      this._ui.destroy();
+    document.getElementById('gameover-overlay')?.remove();
   }
 }
 
